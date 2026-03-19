@@ -8,15 +8,15 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware - RÄTT ORDNING!
+// Middleware
 app.set("trust proxy", true);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// VIKTIGAST: Servera statiska filer FRÅN public-mappen
+// Servera statiska filer från public-mappen
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Test route (för att se om API:t fungerar)
+// Test route
 app.get("/test", (req, res) => {
   res.json({ message: "API fungerar!", status: "ok" });
 });
@@ -27,7 +27,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-// Skapa tabell om den inte finns (körs vid start)
+// Skapa tabell om den inte finns
 pool.query(`
   CREATE TABLE IF NOT EXISTS claims (
     id SERIAL PRIMARY KEY,
@@ -37,12 +37,12 @@ pool.query(`
     city TEXT,
     email TEXT,
     phone TEXT,
-    flightNumber TEXT,
+    flightnumber TEXT,
     airline TEXT,
-    bookingReference TEXT,
-    departureAirport TEXT,
-    arrivalAirport TEXT,
-    flightDate TEXT,
+    bookingreference TEXT,
+    departureairport TEXT,
+    arrivalairport TEXT,
+    flightdate TEXT,
     issue TEXT,
     signature TEXT,
     ip_address TEXT,
@@ -98,10 +98,11 @@ app.post("/submit", async (req, res) => {
       return res.status(400).send("Du måste godkänna användarvillkoren.");
     }
 
+    // UPPDATERAD: Kolumnnamn matchar din tabell (namn, flightnumber, etc.)
     await pool.query(
       `INSERT INTO claims 
-        (namn, street, zip, city, email, phone, flightNumber, airline, bookingReference,
-         departureAirport, arrivalAirport, flightDate, issue,
+        (namn, street, zip, city, email, phone, flightnumber, airline, bookingreference,
+         departureairport, arrivalairport, flightdate, issue,
          signature, ip_address, terms_accepted, affiliate_code) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
       [namn, street, zip, city, email, phone, flightNumber, airline, bookingReference || null,
@@ -110,13 +111,30 @@ app.post("/submit", async (req, res) => {
     );
 
     res.send(`
-      <h1>Tack!</h1>
-      <p>Ditt ärende har registrerats. Vi återkommer via e-post.</p>
-      <a href="/">Gå tillbaka</a>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Tack för din ansökan</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: linear-gradient(135deg, #1a4b8c, #2a6bb0); color: white; }
+          .container { max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; color: #333; }
+          h1 { color: #1a4b8c; }
+          a { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #1a4b8c; color: white; text-decoration: none; border-radius: 5px; }
+          a:hover { background: #0f3a6b; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Tack!</h1>
+          <p>Ditt ärende har registrerats. Vi återkommer via e-post inom 24 timmar.</p>
+          <a href="/">Gå tillbaka till startsidan</a>
+        </div>
+      </body>
+      </html>
     `);
   } catch (err) {
     console.error("Databasfel:", err);
-    res.status(500).send("Något gick fel vid sparandet.");
+    res.status(500).send("Något gick fel vid sparandet. Försök igen senare.");
   }
 });
 
@@ -132,20 +150,39 @@ app.get("/admin", authenticate, async (req, res) => {
       <head>
         <title>Admin - FlightClaim</title>
         <style>
-          body { font-family: Arial; margin: 20px; }
-          table { border-collapse: collapse; width: 100%; }
-          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          th { background-color: #1a4b8c; color: white; }
+          body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+          h1 { color: #1a4b8c; }
+          .stats { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background-color: #1a4b8c; color: white; font-weight: 600; }
+          tr:nth-child(even) { background-color: #f9f9f9; }
+          tr:hover { background-color: #f0f7ff; }
+          .nav { margin: 20px 0; }
+          .nav a { background: #1a4b8c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px; display: inline-block; }
+          .nav a:hover { background: #0f3a6b; }
         </style>
       </head>
       <body>
-        <h1>Admin - Ärenden</h1>
-        <p>Totalt: ${rows.length} ärenden</p>
+        <h1>FlightClaim Admin</h1>
+        <div class="nav">
+          <a href="/admin">🔄 Uppdatera</a>
+          <a href="/">🏠 Tillbaka till sidan</a>
+        </div>
+        
+        <div class="stats">
+          <h2>Statistik</h2>
+          <p><strong>Totalt antal ärenden:</strong> ${rows.length}</p>
+          <p><strong>Senaste ärendet:</strong> ${rows.length > 0 ? new Date(rows[0].created_at).toLocaleString('sv-SE') : 'Inga ärenden än'}</p>
+        </div>
+        
+        <h2>Alla ärenden</h2>
         <table>
           <tr>
             <th>ID</th>
             <th>Namn</th>
             <th>Email</th>
+            <th>Telefon</th>
             <th>Flygnr</th>
             <th>Flygbolag</th>
             <th>Från</th>
@@ -158,18 +195,26 @@ app.get("/admin", authenticate, async (req, res) => {
     `;
     
     rows.forEach(row => {
+      // Formatera händelsetyp
+      let issueText = '';
+      if (row.issue === 'delay') issueText = 'Försening';
+      else if (row.issue === 'cancelled') issueText = 'Inställt';
+      else if (row.issue === 'denied') issueText = 'Nekad ombordstigning';
+      else issueText = row.issue;
+
       html += `<tr>
         <td>${row.id}</td>
         <td>${row.namn || ''}</td>
         <td>${row.email || ''}</td>
+        <td>${row.phone || ''}</td>
         <td>${row.flightnumber || ''}</td>
         <td>${row.airline || ''}</td>
         <td>${row.departureairport || ''}</td>
         <td>${row.arrivalairport || ''}</td>
         <td>${row.flightdate || ''}</td>
-        <td>${row.issue || ''}</td>
+        <td>${issueText}</td>
         <td>${row.affiliate_code || 'main'}</td>
-        <td>${row.created_at || ''}</td>
+        <td>${row.created_at ? new Date(row.created_at).toLocaleString('sv-SE') : ''}</td>
       </tr>`;
     });
     
