@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "express": "^5.2.1",
-    "better-sqlite3": "^11.0.0",
+    "pg": "^8.13.0",
     "body-parser": "^2.2.2",
     "basic-auth": "^2.0.1",
     "cookie-parser": "^1.4.7",

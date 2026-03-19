@@ -1,11 +1,10 @@
 const express = require("express");
-const Database = require('better-sqlite3'); // Ändrat från sqlite3
+const { Pool } = require('pg');
 const bodyParser = require("body-parser");
 const basicAuth = require("basic-auth");
 const PDFDocument = require("pdfkit");
 const cookieParser = require("cookie-parser");
 const path = require('path');
-const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -16,24 +15,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static("public"));
 
-// VERCEL: Använd /tmp för databasen (skrivbar)
-const isVercel = process.env.VERCEL === '1';
-const dbPath = isVercel 
-  ? '/tmp/database.db' 
-  : path.join(__dirname, 'database.db');
-
-console.log("Databas sökväg:", dbPath);
-
-// Skapa databas med better-sqlite3
-let db;
+// PostgreSQL anslutning
+let pool;
 try {
-  db = new Database(dbPath);
-  console.log("Ansluten till databas");
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false // Viktigt för Supabase
+    }
+  });
+  console.log("Ansluten till PostgreSQL");
   
   // Skapa tabell om den inte finns
-  db.exec(`
+  pool.query(`
     CREATE TABLE IF NOT EXISTS claims (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       namn TEXT,
       street TEXT,
       zip TEXT,
@@ -49,14 +45,19 @@ try {
       issue TEXT,
       signature TEXT,
       ip_address TEXT,
-      terms_accepted BOOLEAN DEFAULT 0,
+      terms_accepted BOOLEAN DEFAULT false,
       affiliate_code TEXT DEFAULT 'main',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-  `);
-  console.log("Tabell redo");
+  `, (err) => {
+    if (err) {
+      console.error("Kunde inte skapa tabell:", err);
+    } else {
+      console.log("Tabell redo");
+    }
+  });
 } catch (err) {
-  console.error("Databasfel:", err);
+  console.error("Databasanslutningsfel:", err);
 }
 
 // Basic Auth middleware
@@ -72,8 +73,8 @@ const authenticate = (req, res, next) => {
   next();
 };
 
-// POST /submit - uppdaterad för better-sqlite3
-app.post("/submit", (req, res) => {
+// POST /submit
+app.post("/submit", async (req, res) => {
   try {
     const {
       namn, street, zip, city, email, phone,
@@ -100,24 +101,21 @@ app.post("/submit", (req, res) => {
     if (!signature) {
       return res.status(400).send("Signatur saknas.");
     }
-    const termsAcceptedValue = terms_accepted === "on" ? 1 : 0;
+    const termsAcceptedValue = terms_accepted === "on" ? true : false;
     if (!termsAcceptedValue) {
       return res.status(400).send("Du måste godkänna användarvillkoren.");
     }
 
-    // Insert med better-sqlite3
-    const stmt = db.prepare(`
-      INSERT INTO claims 
+    // Insert till PostgreSQL
+    await pool.query(
+      `INSERT INTO claims 
         (namn, street, zip, city, email, phone, flightNumber, airline, bookingReference,
          departureAirport, arrivalAirport, flightDate, issue,
          signature, ip_address, terms_accepted, affiliate_code) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    
-    stmt.run(
-      namn, street, zip, city, email, phone, flightNumber, airline, bookingReference || null,
-      departureAirport, arrivalAirport, flightDate, issue,
-      signature, userIp, termsAcceptedValue, affiliateCode
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+      [namn, street, zip, city, email, phone, flightNumber, airline, bookingReference || null,
+       departureAirport, arrivalAirport, flightDate, issue,
+       signature, userIp, termsAcceptedValue, affiliateCode]
     );
 
     res.send(`
@@ -132,26 +130,60 @@ app.post("/submit", (req, res) => {
 });
 
 // Admin route
-app.get("/admin", authenticate, (req, res) => {
+app.get("/admin", authenticate, async (req, res) => {
   try {
-    const rows = db.prepare("SELECT * FROM claims ORDER BY created_at DESC").all();
+    const result = await pool.query("SELECT * FROM claims ORDER BY created_at DESC");
+    const rows = result.rows;
     
-    // Enkel HTML-visning (du kan utöka detta senare)
-    let html = '<h1>Admin - Ärenden</h1>';
-    html += `<p>Totalt: ${rows.length} ärenden</p>`;
-    html += '<table border="1"><tr><th>ID</th><th>Namn</th><th>Email</th><th>Flygnr</th><th>Affiliate</th></tr>';
+    // Enkel HTML-visning
+    let html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Admin - FlightClaim</title>
+        <style>
+          body { font-family: Arial; margin: 20px; }
+          table { border-collapse: collapse; width: 100%; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          th { background-color: #1a4b8c; color: white; }
+        </style>
+      </head>
+      <body>
+        <h1>Admin - Ärenden</h1>
+        <p>Totalt: ${rows.length} ärenden</p>
+        <table>
+          <tr>
+            <th>ID</th>
+            <th>Namn</th>
+            <th>Email</th>
+            <th>Flygnr</th>
+            <th>Flygbolag</th>
+            <th>Från</th>
+            <th>Till</th>
+            <th>Datum</th>
+            <th>Händelse</th>
+            <th>Affiliate</th>
+            <th>Skapad</th>
+          </tr>
+    `;
     
     rows.forEach(row => {
       html += `<tr>
         <td>${row.id}</td>
         <td>${row.namn || ''}</td>
         <td>${row.email || ''}</td>
-        <td>${row.flightNumber || ''}</td>
+        <td>${row.flightnumber || ''}</td>
+        <td>${row.airline || ''}</td>
+        <td>${row.departureairport || ''}</td>
+        <td>${row.arrivalairport || ''}</td>
+        <td>${row.flightdate || ''}</td>
+        <td>${row.issue || ''}</td>
         <td>${row.affiliate_code || 'main'}</td>
+        <td>${row.created_at || ''}</td>
       </tr>`;
     });
     
-    html += '</table>';
+    html += '</table></body></html>';
     res.send(html);
   } catch (err) {
     console.error("Admin-fel:", err);
@@ -164,7 +196,7 @@ app.get("/test", (req, res) => {
   res.send("API fungerar!");
 });
 
-// Exportera app för Vercel (VIKTIGT!)
+// Exportera app för Vercel
 module.exports = app;
 
 // För lokal utveckling
