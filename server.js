@@ -2,63 +2,55 @@ const express = require("express");
 const { Pool } = require('pg');
 const bodyParser = require("body-parser");
 const basicAuth = require("basic-auth");
-const PDFDocument = require("pdfkit");
 const cookieParser = require("cookie-parser");
 const path = require('path');
 require('dotenv').config();
 
 const app = express();
 
-// Middleware
+// Middleware - RÄTT ORDNING!
 app.set("trust proxy", true);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.static("public"));
+
+// VIKTIGAST: Servera statiska filer FRÅN public-mappen
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Test route (för att se om API:t fungerar)
+app.get("/test", (req, res) => {
+  res.json({ message: "API fungerar!", status: "ok" });
+});
 
 // PostgreSQL anslutning
-let pool;
-try {
-  pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false // Viktigt för Supabase
-    }
-  });
-  console.log("Ansluten till PostgreSQL");
-  
-  // Skapa tabell om den inte finns
-  pool.query(`
-    CREATE TABLE IF NOT EXISTS claims (
-      id SERIAL PRIMARY KEY,
-      namn TEXT,
-      street TEXT,
-      zip TEXT,
-      city TEXT,
-      email TEXT,
-      phone TEXT,
-      flightNumber TEXT,
-      airline TEXT,
-      bookingReference TEXT,
-      departureAirport TEXT,
-      arrivalAirport TEXT,
-      flightDate TEXT,
-      issue TEXT,
-      signature TEXT,
-      ip_address TEXT,
-      terms_accepted BOOLEAN DEFAULT false,
-      affiliate_code TEXT DEFAULT 'main',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `, (err) => {
-    if (err) {
-      console.error("Kunde inte skapa tabell:", err);
-    } else {
-      console.log("Tabell redo");
-    }
-  });
-} catch (err) {
-  console.error("Databasanslutningsfel:", err);
-}
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
+
+// Skapa tabell om den inte finns (körs vid start)
+pool.query(`
+  CREATE TABLE IF NOT EXISTS claims (
+    id SERIAL PRIMARY KEY,
+    namn TEXT,
+    street TEXT,
+    zip TEXT,
+    city TEXT,
+    email TEXT,
+    phone TEXT,
+    flightNumber TEXT,
+    airline TEXT,
+    bookingReference TEXT,
+    departureAirport TEXT,
+    arrivalAirport TEXT,
+    flightDate TEXT,
+    issue TEXT,
+    signature TEXT,
+    ip_address TEXT,
+    terms_accepted BOOLEAN DEFAULT false,
+    affiliate_code TEXT DEFAULT 'main',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+`).catch(err => console.error("Tabellskapande misslyckades:", err));
 
 // Basic Auth middleware
 const authenticate = (req, res, next) => {
@@ -106,7 +98,6 @@ app.post("/submit", async (req, res) => {
       return res.status(400).send("Du måste godkänna användarvillkoren.");
     }
 
-    // Insert till PostgreSQL
     await pool.query(
       `INSERT INTO claims 
         (namn, street, zip, city, email, phone, flightNumber, airline, bookingReference,
@@ -135,7 +126,6 @@ app.get("/admin", authenticate, async (req, res) => {
     const result = await pool.query("SELECT * FROM claims ORDER BY created_at DESC");
     const rows = result.rows;
     
-    // Enkel HTML-visning
     let html = `
       <!DOCTYPE html>
       <html>
@@ -189,11 +179,6 @@ app.get("/admin", authenticate, async (req, res) => {
     console.error("Admin-fel:", err);
     res.status(500).send("Databasfel: " + err.message);
   }
-});
-
-// Test route
-app.get("/test", (req, res) => {
-  res.send("API fungerar!");
 });
 
 // Exportera app för Vercel
