@@ -516,6 +516,9 @@ app.get("/fullmakt/:id", authenticate, (req, res) => {
   });
 });
 
+// Exportera app för Vercel
+module.exports = app;
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servern körs på http://localhost:${PORT}`);
