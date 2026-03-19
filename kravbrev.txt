@@ -1,0 +1,22 @@
+Dear Sir or Madam,
+
+I represent the passenger named below regarding a compensation claim under EU Regulation 261/2004.
+
+Passenger name: [NAME]
+Flight number: [FLIGHT]
+Flight date: [DATE]
+Route: [FROM] – [TO]
+
+The flight arrived with a delay exceeding three hours. Therefore the passenger is entitled to compensation under EU Regulation 261/2004.
+
+We request payment of €[AMOUNT] within 14 days.
+
+Please find attached the signed power of attorney authorizing us to act on behalf of the passenger.
+
+Bank details for payment:
+[Your bank details]
+
+If we do not receive payment within 14 days, we reserve the right to pursue the claim through the relevant enforcement body or legal proceedings.
+
+Kind regards  
+[Company Name]

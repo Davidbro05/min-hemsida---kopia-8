@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>FlightClaim – Få ersättning för försenat flyg</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.2.0/dist/signature_pad.umd.min.js"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <div class="logo">
+        <span class="logo-icon">✈️</span>
+        <span class="logo-text">FlightClaim</span>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="#home" class="active">Hem</a></li>
+        <li><a href="#how-it-works">Så fungerar det</a></li>
+        <li><a href="#about">Om oss</a></li>
+        <li><a href="#contact">Kontakt</a></li>
+      </ul>
+      <div class="nav-cta">
+        <span class="badge">Ersättning upp till 600€</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section id="home" class="hero">
+    <div class="container hero-content">
+      <div class="hero-text">
+        <h1>Få ersättning för <span class="highlight">försenat eller inställt flyg</span></h1>
+        <p class="hero-subtitle">Du kan ha rätt till upp till 600€ per passagerare. Vi sköter hela processen mot flygbolaget – du får pengarna på kontot.</p>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-badge">
+          <span class="badge-icon">⚖️</span>
+          <span>Juridisk expertis</span>
+        </div>
+        <div class="trust-badge">
+          <span class="badge-icon">🔒</span>
+          <span>Säkert & tryggt</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="how-it-works">
+    <div class="container">
+      <h2>Så här enkelt är det</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Fyll i formuläret</h3>
+          <p>Ange dina uppgifter och flyginformation – det tar bara 2 minuter.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Vi granskar ditt ärende</h3>
+          <p>Våra juridiska experter bedömer dina chanser och inleder processen.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Du får din ersättning</h3>
+          <p>Vi driver ärendet mot flygbolaget. Pengarna betalas ut direkt till dig.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Form Section -->
+  <section class="form-section">
+    <div class="container">
+      <div class="form-container">
+        <div class="form-header">
+          <h2>Kontrollera din ersättning</h2>
+          <p>Fyll i formuläret nedan så återkommer vi inom 24 timmar</p>
+        </div>
+
+        <form action="/submit" method="POST" id="claimForm">
+          <!-- Passenger Information -->
+          <div class="form-panel">
+            <h3><span class="panel-icon">👤</span> Passagerarinformation</h3>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label>Fullständigt namn</label>
+                <input type="text" name="namn" required placeholder="Som det står i ditt pass">
+              </div>
+
+              <div class="form-group full-width">
+                <label>Gatuadress</label>
+                <input type="text" name="street" required placeholder="Gata och nummer">
+              </div>
+
+              <div class="form-group">
+                <label>Postnummer</label>
+                <input type="text" name="zip" required placeholder="12345">
+              </div>
+
+              <div class="form-group">
+                <label>Ort</label>
+                <input type="text" name="city" required placeholder="Stockholm">
+              </div>
+
+              <div class="form-group">
+                <label>E-post</label>
+                <input type="email" name="email" required placeholder="din.email@exempel.se">
+              </div>
+
+              <div class="form-group">
+                <label>Telefon</label>
+                <input type="tel" name="phone" required placeholder="070-123 45 67">
+              </div>
+            </div>
+          </div>
+
+          <!-- Flight Information -->
+          <div class="form-panel">
+            <h3><span class="panel-icon">✈️</span> Flyginformation</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Flygbolag</label>
+                <input type="text" name="airline" required placeholder="t.ex. SAS, Norwegian">
+              </div>
+
+              <div class="form-group">
+                <label>Flygnummer</label>
+                <input type="text" name="flightNumber" required placeholder="t.ex. SK1234">
+              </div>
+
+              <div class="form-group">
+                <label>Bokningsreferens (PNR)</label>
+                <input type="text" name="bookingReference" placeholder="Valfritt">
+              </div>
+
+              <div class="form-group">
+                <label>Avgångsflygplats</label>
+                <input type="text" name="departureAirport" required placeholder="t.ex. ARN, CPH">
+              </div>
+
+              <div class="form-group">
+                <label>Landningsflygplats</label>
+                <input type="text" name="arrivalAirport" required placeholder="t.ex. LHR, CDG">
+              </div>
+
+              <div class="form-group">
+                <label>Flygdatum</label>
+                <input type="date" name="flightDate" required>
+              </div>
+
+              <div class="form-group full-width">
+                <label>Vad hände?</label>
+                <select name="issue" required>
+                  <option value="" disabled selected>Välj typ av störning</option>
+                  <option value="delay">Försening över 3 timmar</option>
+                  <option value="cancelled">Inställt flyg</option>
+                  <option value="denied">Nekad ombordstigning (overbooking)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Legal & Signature -->
+          <div class="form-panel">
+            <h3><span class="panel-icon">⚖️</span> Juridiskt godkännande</h3>
+            
+            <div class="terms-box">
+              <p><strong>Fullmakt</strong></p>
+              <p>Genom att skriva under ger du FlightClaim AB i uppdrag att företräda dig i ersättningsärendet mot flygbolaget enligt EU-förordning 261/2004. Läs våra <a href="#" id="showTermsLink">fullständiga villkor</a>.</p>
+            </div>
+
+            <div class="checkbox-wrapper">
+              <input type="checkbox" name="terms_accepted" id="termsAccepted" required>
+              <label for="termsAccepted">Jag bekräftar att jag har läst och godkänner <a href="#" id="showTermsLinkInline">användarvillkoren</a> samt att uppgifterna ovan är korrekta.</label>
+            </div>
+
+            <div class="signature-area">
+              <div class="signature-label">
+                <label>Signatur</label>
+                <span class="signature-hint">Rita med fingret eller musen</span>
+              </div>
+              <div class="signature-pad-container">
+                <canvas id="signature-pad" class="signature-canvas" width="500" height="200"></canvas>
+              </div>
+              <button type="button" id="clear-signature" class="btn-secondary btn-small">Rensa signatur</button>
+              <input type="hidden" name="signature" id="signature-input">
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <p class="privacy-note">🔒 Dina uppgifter hanteras säkert enligt GDPR. Vi delar aldrig dina personuppgifter med tredje part utan ditt medgivande.</p>
+            <button type="submit" class="btn-primary btn-large">Skicka ansökan – kostnadsfritt</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials">
+    <div class="container">
+      <h2>Vad våra första kunder säger</h2>
+      <div class="testimonial-grid">
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <p>"Enkel process och tydlig kommunikation. Skönt att någon annan sköter kontakten med flygbolaget."</p>
+          <div class="testimonial-author">– Anna, Stockholm</div>
+        </div>
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <p>"Professionellt intryck från start. Hoppas på positivt besked från flygbolaget snart!"</p>
+          <div class="testimonial-author">– Johan, Göteborg</div>
+        </div>
+        <div class="testimonial-card">
+          <div class="stars">★★★★☆</div>
+          <p>"Bra och tydlig återkoppling. Ser fram emot att följa mitt ärende."</p>
+          <div class="testimonial-author">– Maria, Malmö</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="about-section">
+    <div class="container">
+      <h2>Om FlightClaim</h2>
+      <div class="about-content">
+        <div class="about-text">
+          <p>FlightClaim grundades 2026 med en enkel mission: att hjälpa resenärer att få den ersättning de har rätt till enligt EU-förordning 261/2004. Vi är ett nytänkande företag som kombinerar juridisk expertis med modern teknik för att göra processen enkel och smidig för våra kunder.</p>
+          <p>Vårt team består av juridiska experter med gedigen erfarenhet av flygbolagens regelverk och ersättningsprocesser. Vi brinner för att alla ska ha råd att få juridisk hjälp – därför tar vi endast betalt om du får din ersättning.</p>
+          <p>Vi är här för att kämpa för din rätt – ingen seger, ingen avgift.</p>
+        </div>
+        <div class="about-stats">
+          <div class="about-stat">
+            <span class="about-number">Nystartade</span>
+            <span class="about-label">2026</span>
+          </div>
+          <div class="about-stat">
+            <span class="about-number">Juridisk</span>
+            <span class="about-label">expertis</span>
+          </div>
+          <div class="about-stat">
+            <span class="about-number">100%</span>
+            <span class="about-label">Transparens</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" class="contact-section">
+    <div class="container">
+      <h2>Kontakta oss</h2>
+      <div class="contact-content">
+        <div class="contact-info">
+          <div class="contact-item">
+            <span class="contact-icon">📧</span>
+            <div>
+              <h4>E-post</h4>
+              <p><a href="mailto:info@flightclaim.se">info@flightclaim.se</a></p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="contact-icon">📞</span>
+            <div>
+              <h4>Telefon</h4>
+              <p><a href="tel:08-12345678">08-123 456 78</a></p>
+              <p class="contact-note">Vardagar 9-16</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="contact-icon">📍</span>
+            <div>
+              <h4>Besöksadress</h4>
+              <p>Storgatan 1<br>114 44 Stockholm</p>
+            </div>
+          </div>
+        </div>
+        <div class="contact-form">
+          <p>Har du frågor? Fyll i formuläret så återkommer vi inom 24 timmar.</p>
+          <form class="simple-contact" onsubmit="alert('Funktion kommer snart!'); return false;">
+            <input type="text" placeholder="Ditt namn">
+            <input type="email" placeholder="Din e-post">
+            <textarea placeholder="Din fråga" rows="3"></textarea>
+            <button type="submit" class="btn-secondary">Skicka meddelande</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq">
+    <div class="container">
+      <h2>Vanliga frågor</h2>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h4>Vad kostar det?</h4>
+          <p>Vi tar endast provision om vi vinner ditt ärende (25% + moms på ersättningen). Inga dolda avgifter.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Hur lång tid tar det?</h4>
+          <p>De flesta ärenden är klara inom 4-8 veckor, men det kan variera beroende på flygbolag.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Vilka flygningar gäller?</h4>
+          <p>Alla flygningar inom EU, samt flygningar till/från EU med EU-baserade flygbolag.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Måste jag göra något själv?</h4>
+          <p>Nej, vi sköter all kontakt med flygbolaget. Du behöver bara signera fullmakten.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="footer-logo">
+        <span class="logo-icon">✈️</span>
+        <span class="logo-text">FlightClaim</span>
+      </div>
+      <div class="footer-links">
+        <div class="footer-column">
+          <h5>Om oss</h5>
+          <ul>
+            <li><a href="#about">Vårt team</a></li>
+            <li><a href="#">Juridisk grund</a></li>
+            <li><a href="#">Press</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h5>Hjälp</h5>
+          <ul>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#contact">Kontakta oss</a></li>
+            <li><a href="#">Integritetspolicy</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h5>Kontakt</h5>
+          <ul>
+            <li>info@flightclaim.se</li>
+            <li>08-123 456 78</li>
+            <li>Storgatan 1, 114 44 Stockholm</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 FlightClaim AB. Alla rättigheter förbehållna. Org.nr: 559999-1234</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal för användarvillkor -->
+  <div id="termsModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Användarvillkor för FlightClaim AB</h2>
+      <div class="modal-body">
+        <h3>Fullmakt och uppdragsbeskrivning</h3>
+        <p>Härmed ger jag, undertecknad, FlightClaim AB (org.nr 559999-1234) i uppdrag att företräda mig i ärendet gällande ersättning från flygbolaget enligt EU-förordning 261/2004.</p>
+        
+        <h4>FlightClaim AB bemyndigas att:</h4>
+        <ul>
+          <li>Inhämta alla nödvändiga uppgifter från flygbolaget</li>
+          <li>Föra min talan i kontakt med flygbolaget och eventuella tillsynsmyndigheter</li>
+          <li>Vid behov vidta rättsliga åtgärder i mitt namn</li>
+          <li>Ta emot ersättningsbetalningar på mina vägnar</li>
+        </ul>
+
+        <h4>Arvode</h4>
+        <p>Vid framgångsrikt ärende utgår ett arvode om 25% + moms av den totala ersättningen. Inget arvode utgår om ärendet inte vinner framgång.</p>
+
+        <h4>Personuppgifter</h4>
+        <p>Personuppgifter behandlas i enlighet med vår integritetspolicy och GDPR. Uppgifterna delas endast med berört flygbolag samt eventuell domstol/myndighet.</p>
+
+        <p><em>Genom att kryssa i rutan och signera bekräftar jag att jag har läst, förstått och godkänt dessa villkor.</em></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Spara affiliate-kod i cookie om den finns i URL:en
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get('ref');
+      if (ref) {
+        document.cookie = `affiliate_code=${encodeURIComponent(ref)}; max-age=2592000; path=/`;
+        console.log('Affiliate kod sparad:', ref);
+      }
+    })();
+
+    (function() {
+      // Modal-logik
+      const modal = document.getElementById('termsModal');
+      const links = document.querySelectorAll('#showTermsLink, #showTermsLinkInline');
+      const closeBtn = document.querySelector('.close');
+
+      links.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          modal.style.display = 'block';
+          document.body.style.overflow = 'hidden';
+        });
+      });
+
+      closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      });
+
+      window.addEventListener('click', function(event) {
+        if (event.target == modal) {
+          modal.style.display = 'none';
+          document.body.style.overflow = 'auto';
+        }
+      });
+
+      // Signature Pad - samma inställningar för alla enheter
+      const canvas = document.getElementById('signature-pad');
+      if (canvas) {
+        const container = canvas.parentElement;
+        
+        function resizeCanvas() {
+          const containerWidth = container.clientWidth;
+          const containerHeight = container.clientHeight;
+          
+          canvas.width = containerWidth;
+          canvas.height = containerHeight;
+          
+          if (window.signaturePad) {
+            const data = window.signaturePad.toData();
+            window.signaturePad.clear();
+            window.signaturePad.fromData(data);
+          }
+        }
+        
+        window.signaturePad = new SignaturePad(canvas, {
+          backgroundColor: 'rgb(255,255,255)',
+          penColor: 'rgb(0,0,0)',
+          minWidth: 0.5,
+          maxWidth: 2.5,
+          throttle: 0,
+          dotSize: 1,
+          velocityFilterWeight: 0.7
+        });
+
+        document.getElementById('clear-signature').addEventListener('click', function() {
+          window.signaturePad.clear();
+        });
+
+        const form = document.getElementById('claimForm');
+        form.addEventListener('submit', function(e) {
+          if (window.signaturePad.isEmpty()) {
+            alert('Du måste rita din signatur för att slutföra ansökan.');
+            e.preventDefault();
+            return;
+          }
+          document.getElementById('signature-input').value = window.signaturePad.toDataURL();
+        });
+
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            resizeCanvas();
+          }, 100);
+        });
+
+        setTimeout(resizeCanvas, 10);
+      }
+
+      // Smooth scroll för navigation
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
